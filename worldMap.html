@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
-    <title>World Map</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>Interactive Map</title>
+    <h1>World Map</h1>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Yanone+Kaffeesatz:200" rel="stylesheet">
     <style>
+      h1 {
+        color:White;
+        font-family: verdana;
+        font-size: 300%;
+      }
 
       body {
         margin: 0;
-        background-color: #2A2C39;
+        background-color: #2A2C39;;
         font-family: 'Yanone Kaffeesatz', sans-serif;
         font-weight: 200;
         font-size: 17px;
@@ -21,6 +26,35 @@
         width: 100vw;
         height: 100vh;
       }
+      a:link {
+        color: Blue;
+        font-family: verdana;
+        font-size: 130%;
+        background-color: transparent;
+        text-decoration: none;
+      }
+      a:visited {
+        color: White;
+        font-family: verdana;
+        font-size: 130%;
+        background-color: transparent;
+        text-decoration: none;
+      }
+      a:hover {
+        color: red;
+        font-family: verdana;
+        font-size: 130%;
+        background-color: transparent;
+        text-decoration: underline;
+      }
+      a:active {
+        color: Red;
+        font-family: verdana;
+        font-size: 130%;
+        background-color: transparent;
+        text-decoration: underline;
+      }
+
       svg rect {
         fill: #3a83a5;   /* map background color */
       }
@@ -33,38 +67,35 @@
         fill: #4B5358;   /* highlight color for selected country */
       }
       .countryLabel{
-        display: none;   /* hide all country labels by default */
+        display: none;   /* hide all country labels */
       }
       .countryName{
-        fill: #FFFAFF;   /* country label text colour */
+        fill: #FFFAFF;   /* country label text */
       }
       .countryLabelBg{
-        fill: #30BCED;   /* country label background colour */
+        fill: #30BCED;   /* country label background  */
       }
     </style>
   </head>
 
   <body>
-    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSglP8Mctkcou5ejwAuNiviGpXTZKKIqCUEHRR9JnRmSCJp7ZPzdpE4ZrJnSLqYvH7Q69uZeSTDXptH/pubhtml?gid=1469900993&amp;single=true&amp;widget=true&amp;headers=false"
-     height="300" width="800" style="border:none;"> </iframe>
+    <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vSglP8Mctkcou5ejwAuNiviGpXTZKKIqCUEHRR9JnRmSCJp7ZPzdpE4ZrJnSLqYvH7Q69uZeSTDXptH/pubhtml?gid=1469900993&amp;single=true&amp;widget=true&amp;headers=false">Link to Countries Data </a>
     <div id="map-holder"></div>
     <script type="text/javascript">
 
-      // Define size of map group
+      // DEFINE VARIABLES
       // Full world map is 2:1 ratio
       w = 3000;
       h = 1250;
-      // variables for catching min and max zoom factors
+      //min and max zoom factors
       var minZoom;
       var maxZoom;
 
-      // FUNCTIONS/OBJECTS
-      // Define map projection
       var projection = d3
         .geoEquirectangular()
-        .center([0, 15]) // set centre to further North as we are cropping more off bottom of map
-        .scale([w / (2 * Math.PI)]) // scale to fit group width
-        .translate([w / 2, h / 2]) // ensure centred in group
+        .center([0, 15])
+        .scale([w / (2 * Math.PI)])
+        .translate([w / 2, h / 2])
       ;
 
       // Define map path
@@ -84,7 +115,7 @@
         ;
       }
 
-      // Define map zoom behaviour
+      //map zoom
       var zoom = d3
         .zoom()
         .on("zoom", zoomed)
@@ -122,28 +153,24 @@
       function boxZoom(box, centroid, paddingPerc) {
         minXY = box[0];
         maxXY = box[1];
-        //  size of map area defined
+        // find size of map area defined
         zoomWidth = Math.abs(minXY[0] - maxXY[0]);
         zoomHeight = Math.abs(minXY[1] - maxXY[1]);
-        //  midpoint of map area defined
+        // find midpoint of map area defined
         zoomMidX = centroid[0];
         zoomMidY = centroid[1];
         // increase map area to include padding
         zoomWidth = zoomWidth * (1 + paddingPerc / 100);
         zoomHeight = zoomHeight * (1 + paddingPerc / 100);
-        // find scale required for area to fill svg
         maxXscale = $("svg").width() / zoomWidth;
         maxYscale = $("svg").height() / zoomHeight;
         zoomScale = Math.min(maxXscale, maxYscale);
-        // handle some edge cases
         // limit to max zoom (handles tiny countries)
         zoomScale = Math.min(zoomScale, maxZoom);
         // limit to min zoom (handles large countries and countries that span the date line)
         zoomScale = Math.max(zoomScale, minZoom);
-        // Find screen pixel equivalent once scaled
         offsetX = zoomScale * zoomMidX;
         offsetY = zoomScale * zoomMidY;
-        // Find offset to centre, making sure no gap at left or top of holder
         dleft = Math.min(0, $("svg").width() / 2 - offsetX);
         dtop = Math.min(0, $("svg").height() / 2 - offsetY);
         // Make sure no gap at bottom or right of holder
@@ -169,7 +196,7 @@
         initiateZoom();
       });
 
-      // create an SVG
+      // SVG
       var svg = d3
         .select("#map-holder")
         .append("svg")
@@ -180,14 +207,12 @@
         .call(zoom)
       ;
 
-
-      // get map data
       d3.json(
         "https://raw.githubusercontent.com/andybarefoot/andybarefoot-www/master/maps/mapdata/custom50.json",
         function(json) {
-          //Bind data and create one path per GeoJSON feature
+          //create one path per GeoJSON feature
           countriesGroup = svg.append("g").attr("id", "map");
-          // add a background rectangle
+          //background rectangle
           countriesGroup
             .append("rect")
             .attr("x", 0)
@@ -195,7 +220,7 @@
             .attr("width", w)
             .attr("height", h);
 
-          // draw a path for each feature/country
+          // path for each feature/country
           countries = countriesGroup
             .selectAll("path")
             .data(json.features)
@@ -206,8 +231,8 @@
               return "country" + d.properties.iso_a3;
             })
             .attr("class", "country")
-            .attr("stroke-width", 10)
-            .attr("stroke", "#ff0000")
+      //      .attr("stroke-width", 10)
+      //      .attr("stroke", "#ff0000")
             // mouseover action to show name label for feature/country
             .on("mouseover", function(d, i) {
                 d3.select("#countryLabel" + d.properties.iso_a3).style("display", "block");
@@ -221,8 +246,8 @@
                 d3.select(this).classed("country-on", true);
             boxZoom(path.bounds(d), path.centroid(d), 20);
             });
-          // Add a label group to each feature/country. This will contain the country name and a background rectangle
-          // Use CSS to have class "countryLabel" initially hidden
+          // label group to each feature/country
+          //"countryLabel" initially hidden
           countryLabels = countriesGroup
             .selectAll("g")
             .data(json.features)
@@ -237,7 +262,7 @@
                 "translate(" + path.centroid(d)[0] + "," + path.centroid(d)[1] + ")"
               );
             })
-            //mouseover function to the label
+            //mouseover functionality to the label
             .on("mouseover", function(d, i) {
                 d3.select(this).style("display", "block");
             })
@@ -250,7 +275,7 @@
                 d3.select("#country" + d.properties.iso_a3).classed("country-on", true);
               boxZoom(path.bounds(d), path.centroid(d), 20);
             });
-          //text to the label group showing country name
+          // label group showing country name
           countryLabels
             .append("text")
             .attr("class", "countryName")
